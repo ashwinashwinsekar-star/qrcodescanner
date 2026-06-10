@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #18181b;
+    --surface2: #222226;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --accent: #7c6af7;
+    --accent2: #a594ff;
+    --text: #f0eeff;
+    --muted: #8a8898;
+    --success: #4ade80;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    max-width: 720px;
+    padding: 2.5rem 1.5rem 0;
+    text-align: center;
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.4rem;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-icon svg { width: 20px; height: 20px; fill: #fff; }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .tagline {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-top: 0.3rem;
+    margin-bottom: 2rem;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    width: fit-content;
+    margin: 0 auto 2rem;
+  }
+
+  .tab-btn {
+    padding: 0.45rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font);
+  }
+
+  .tab-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .tab-btn:not(.active):hover { color: var(--text); background: var(--surface2); }
+
+  main {
+    width: 100%;
+    max-width: 720px;
+    padding: 0 1.5rem 4rem;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+  }
+
+  input[type="text"], textarea, select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.95rem;
+    padding: 0.7rem 0.9rem;
+    outline: none;
+    transition: border-color 0.15s;
+    resize: vertical;
+  }
+
+  input[type="text"]:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  select option { background: #222; }
+
+  textarea { min-height: 80px; }
+
+  .row { display: flex; gap: 1rem; }
+  .row > * { flex: 1; }
+
+  .color-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .color-group { flex: 1; }
+
+  input[type="color"] {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    cursor: pointer;
+    padding: 3px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 1.4rem;
+    border-radius: 10px;
+    border: none;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    font-size: 0.95rem;
+    padding: 0.8rem;
+  }
+
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent2); }
+
+  .qr-output {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1rem 0;
+  }
+
+  #qr-canvas-wrap {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    display: inline-block;
+    line-height: 0;
+  }
+
+  .qr-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #qr-result-text {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: center;
+    word-break: break-all;
+    max-width: 340px;
+  }
+
+  .scanner-area {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+    min-height: 260px;
+  }
+
+  #reader {
+    width: 100%;
+    border: none !important;
+  }
+
+  #reader > * { border: none !important; }
+
+  #reader video {
+    border-radius: 8px;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .scan-result-box {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+    display: none;
+  }
+
+  .scan-result-box.visible { display: block; }
+
+  .scan-result-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--success);
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    background: var(--success);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  #scan-text {
+    font-size: 0.95rem;
+    word-break: break-all;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border2);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .upload-zone:hover { border-color: var(--accent); background: rgba(124,106,247,0.05); }
+
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+  .upload-zone p { color: var(--muted); font-size: 0.875rem; }
+  .upload-zone span { color: var(--accent2); font-weight: 600; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin: 1rem 0;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .range-row input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent);
+  }
+
+  .range-val {
+    font-size: 0.85rem;
+    color: var(--muted);
+    min-width: 30px;
+    text-align: right;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(124,106,247,0.15);
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 500px) {
+    .row { flex-direction: column; }
+    header { padding: 1.5rem 1rem 0; }
+    main { padding: 0 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/>
+        <rect x="19" y="14" width="2" height="2"/><rect x="14" y="19" width="2" height="2"/>
+        <rect x="17" y="17" width="4" height="4" rx="0.5"/>
+      </svg>
+    </div>
+    <h1>QR Studio</h1>
+  </div>
+  <p class="tagline">Generate beautiful QR codes · Scan from camera or image</p>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('generate')">
+      ⬡ Generate
+    </button>
+    <button class="tab-btn" onclick="switchTab('scan')">
+      ◎ Scan
+    </button>
+  </div>
+
+  <!-- GENERATE PANEL -->
+  <div class="panel active" id="panel-generate">
+    <div class="card">
+      <p class="section-title">Content</p>
+
+      <div style="margin-bottom:1rem">
+        <label>Type</label>
+        <select id="qr-type" onchange="updatePlaceholder()">
+          <option value="url">URL / Website</option>
+          <option value="text">Plain text</option>
+          <option value="email">Email</option>
+          <option value="phone">Phone number</option>
+          <option value="wifi">Wi-Fi</option>
+          <option value="vcard">Contact (vCard)</option>
+        </select>
+      </div>
+
+      <div id="input-url">
+        <label>URL</label>
+        <input type="text" id="val-url" placeholder="https://example.com" />
+      </div>
+
+      <div id="input-text" style="display:none">
+        <label>Text</label>
+        <textarea id="val-text" placeholder="Enter any text…"></textarea>
+      </div>
+
+      <div id="input-email" style="display:none">
+        <label>Email address</label>
+        <input type="text" id="val-email" placeholder="hello@example.com" />
+      </div>
+
+      <div id="input-phone" style="display:none">
+        <label>Phone number</label>
+        <input type="text" id="val-phone" placeholder="+1 555 000 0000" />
+      </div>
+
+      <div id="input-wifi" style="display:none">
+        <div class="row">
+          <div>
+            <label>Network name (SSID)</label>
+            <input type="text" id="val-wifi-ssid" placeholder="MyWiFi" />
+          </div>
+          <div>
+            <label>Password</label>
+            <input type="text" id="val-wifi-pass" placeholder="password" />
+          </div>
+        </div>
+        <div style="margin-top:0.75rem">
+          <label>Security</label>
+          <select id="val-wifi-sec">
+            <option>WPA</option><option>WEP</option><option>nopass</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="input-vcard" style="display:none">
+        <div class="row">
+          <div>
+            <label>Full name</label>
+            <input type="text" id="val-vcard-name" placeholder="Jane Doe" />
+          </div>
+          <div>
+            <label>Phone</label>
+            <input type="text" id="val-vcard-phone" placeholder="+1 555 000 0000" />
+          </div>
+        </div>
+        <div style="margin-top:0.75rem">
+          <label>Email</label>
+          <input type="text" id="val-vcard-email" placeholder="jane@example.com" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Appearance</p>
+      <div class="row" style="margin-bottom:1rem">
+        <div class="color-group">
+          <label>Foreground</label>
+          <input type="color" id="qr-fg" value="#000000" />
+        </div>
+        <div class="color-group">
+          <label>Background</label>
+          <input type="color" id="qr-bg" value="#ffffff" />
+        </div>
+      </div>
+      <div>
+        <label>Size</label>
+        <div class="range-row">
+          <input type="range" min="128" max="512" step="32" value="256" id="qr-size"
+                 oninput="document.getElementById('qr-size-val').textContent=this.value+'px'">
+          <span class="range-val" id="qr-size-val">256px</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateQR()">Generate QR Code</button>
+
+    <div id="qr-output-section" style="display:none; margin-top:1.5rem;">
+      <div class="card">
+        <div class="qr-output">
+          <div id="qr-canvas-wrap"></div>
+          <p id="qr-result-text"></p>
+          <div class="qr-actions">
+            <button class="btn btn-ghost" onclick="downloadQR('png')">⬇ Download PNG</button>
+            <button class="btn btn-ghost" onclick="downloadQR('svg')">⬇ Download SVG</button>
+            <button class="btn btn-ghost" onclick="copyQR()">⎘ Copy image</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCAN PANEL -->
+  <div class="panel" id="panel-scan">
+    <div class="card">
+      <p class="section-title">Scan with camera <span class="badge">Live</span></p>
+      <div class="scanner-area">
+        <div id="reader"></div>
+      </div>
+      <div style="display:flex; gap:0.75rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button class="btn btn-primary" id="start-btn" onclick="startScanner()" style="flex:1">
+          ▶ Start camera
+        </button>
+        <button class="btn btn-ghost" id="stop-btn" onclick="stopScanner()" style="display:none; flex:1">
+          ■ Stop
+        </button>
+      </div>
+    </div>
+
+    <div class="divider">or upload an image</div>
+
+    <div class="card">
+      <p class="section-title">Scan from image</p>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" accept="image/*" id="img-upload" onchange="scanImage(event)" />
+        <div class="upload-icon">🖼</div>
+        <p><span>Choose an image</span> or drag & drop</p>
+        <p style="margin-top:4px;font-size:0.75rem">PNG, JPG, GIF, WebP</p>
+      </div>
+    </div>
+
+    <div class="scan-result-box" id="scan-result-box">
+      <div class="scan-result-label">
+        <span class="dot"></span> QR code detected
+      </div>
+      <p id="scan-text"></p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="copyScanResult()">⎘ Copy</button>
+        <button class="btn btn-ghost" id="open-link-btn" onclick="openScanLink()" style="display:none">
+          ↗ Open link
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+let html5Scanner = null;
+let lastScanResult = '';
+let qrInstance = null;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'generate') || (i === 1 && tab === 'scan'));
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab !== 'scan') stopScanner();
+}
+
+function updatePlaceholder() {
+  const type = document.getElementById('qr-type').value;
+  const ids = ['url','text','email','phone','wifi','vcard'];
+  ids.forEach(id => {
+    document.getElementById('input-' + id).style.display = id === type ? 'block' : 'none';
+  });
+}
+
+function getQRContent() {
+  const type = document.getElementById('qr-type').value;
+  if (type === 'url')   return document.getElementById('val-url').value.trim() || 'https://example.com';
+  if (type === 'text')  return document.getElementById('val-text').value.trim() || 'Hello, World!';
+  if (type === 'email') return 'mailto:' + (document.getElementById('val-email').value.trim() || 'hello@example.com');
+  if (type === 'phone') return 'tel:' + (document.getElementById('val-phone').value.trim() || '+10000000000');
+  if (type === 'wifi') {
+    const ssid = document.getElementById('val-wifi-ssid').value.trim();
+    const pass = document.getElementById('val-wifi-pass').value.trim();
+    const sec  = document.getElementById('val-wifi-sec').value;
+    return `WIFI:T:${sec};S:${ssid};P:${pass};;`;
+  }
+  if (type === 'vcard') {
+    const n = document.getElementById('val-vcard-name').value.trim();
+    const p = document.getElementById('val-vcard-phone').value.trim();
+    const e = document.getElementById('val-vcard-email').value.trim();
+    return `BEGIN:VCARD\nVERSION:3.0\nFN:${n}\nTEL:${p}\nEMAIL:${e}\nEND:VCARD`;
+  }
+  return '';
+}
+
+function generateQR() {
+  const content = getQRContent();
+  const size    = parseInt(document.getElementById('qr-size').value);
+  const fg      = document.getElementById('qr-fg').value;
+  const bg      = document.getElementById('qr-bg').value;
+
+  const wrap = document.getElementById('qr-canvas-wrap');
+  wrap.innerHTML = '';
+
+  qrInstance = new QRCode(wrap, {
+    text: content,
+    width: size,
+    height: size,
+    colorDark: fg,
+    colorLight: bg,
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  document.getElementById('qr-result-text').textContent = content.length > 60 ? content.slice(0,60) + '…' : content;
+  document.getElementById('qr-output-section').style.display = 'block';
+  document.getElementById('qr-output-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function getCanvas() {
+  return document.querySelector('#qr-canvas-wrap canvas');
+}
+
+function downloadQR(fmt) {
+  const canvas = getCanvas();
+  if (!canvas) return;
+  const a = document.createElement('a');
+  if (fmt === 'png') {
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'qr-code.png';
+  } else {
+    const size = canvas.width;
+    const ctx = canvas.getContext('2d');
+    const img = canvas.toDataURL('image/png');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}"><image href="${img}" width="${size}" height="${size}"/></svg>`;
+    a.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    a.download = 'qr-code.svg';
+  }
+  a.click();
+}
+
+async function copyQR() {
+  const canvas = getCanvas();
+  if (!canvas) return;
+  canvas.toBlob(async blob => {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      showToast('Copied to clipboard!');
+    } catch { showToast('Copy not supported in this browser'); }
+  });
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#7c6af7;color:#fff;padding:0.6rem 1.2rem;border-radius:8px;font-size:0.875rem;font-weight:600;z-index:9999;transition:opacity 0.3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2000);
+}
+
+function startScanner() {
+  if (html5Scanner) return;
+  html5Scanner = new Html5Qrcode('reader');
+  html5Scanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 220, height: 220 } },
+    (text) => { onScanSuccess(text); },
+    () => {}
+  ).then(() => {
+    document.getElementById('start-btn').style.display = 'none';
+    document.getElementById('stop-btn').style.display = 'block';
+  }).catch(err => {
+    showToast('Camera error: ' + err);
+    html5Scanner = null;
+  });
+}
+
+function stopScanner() {
+  if (!html5Scanner) return;
+  html5Scanner.stop().then(() => {
+    html5Scanner.clear();
+    html5Scanner = null;
+    document.getElementById('start-btn').style.display = 'block';
+    document.getElementById('stop-btn').style.display = 'none';
+    document.getElementById('reader').innerHTML = '';
+  }).catch(() => {});
+}
+
+function onScanSuccess(text) {
+  lastScanResult = text;
+  stopScanner();
+  showScanResult(text);
+}
+
+function showScanResult(text) {
+  lastScanResult = text;
+  const box = document.getElementById('scan-result-box');
+  document.getElementById('scan-text').textContent = text;
+  box.classList.add('visible');
+  const isUrl = /^https?:\/\//i.test(text);
+  document.getElementById('open-link-btn').style.display = isUrl ? 'inline-flex' : 'none';
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyScanResult() {
+  navigator.clipboard.writeText(lastScanResult).then(() => showToast('Copied!')).catch(() => {});
+}
+
+function openScanLink() {
+  if (/^https?:\/\//i.test(lastScanResult)) window.open(lastScanResult, '_blank');
+}
+
+function scanImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const scanner = new Html5Qrcode('scan-img-temp');
+  const tmp = document.createElement('div');
+  tmp.id = 'scan-img-temp';
+  tmp.style.display = 'none';
+  document.body.appendChild(tmp);
+  Html5Qrcode.scanFile(file, true)
+    .then(text => {
+      showScanResult(text);
+      document.getElementById('upload-zone').style.borderColor = 'var(--success)';
+      setTimeout(() => document.getElementById('upload-zone').style.borderColor = '', 1500);
+    })
+    .catch(() => {
+      showToast('No QR code found in image');
+    })
+    .finally(() => { tmp.remove(); });
+}
+</script>
+</body>
+</html>
