@@ -374,9 +374,180 @@
     header { padding: 1.5rem 1rem 0; }
     main { padding: 0 1rem 3rem; }
   }
+
+  /* ---- Auth screen ---- */
+  #auth-screen {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #auth-screen .logo { margin-bottom: 0.4rem; }
+
+  .auth-tagline {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-top: 0.3rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    width: 100%;
+  }
+
+  .auth-mode-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 1.5rem;
+  }
+
+  .auth-mode-btn {
+    flex: 1;
+    padding: 0.45rem 0.8rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font);
+  }
+
+  .auth-mode-btn.active { background: var(--accent); color: #fff; }
+  .auth-mode-btn:not(.active):hover { color: var(--text); }
+
+  .auth-field { margin-bottom: 1rem; }
+
+  .auth-error {
+    display: none;
+    background: rgba(248,113,113,0.1);
+    border: 1px solid rgba(248,113,113,0.3);
+    color: #f87171;
+    font-size: 0.82rem;
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .auth-error.visible { display: block; }
+
+  .auth-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .auth-submit-btn .spinner {
+    display: none;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  .auth-submit-btn.loading .spinner { display: inline-block; }
+  .auth-submit-btn.loading .btn-label { opacity: 0.7; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .user-bar {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .user-bar .user-email { color: var(--text); font-weight: 500; }
+
+  .logout-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: all 0.15s;
+  }
+
+  .logout-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/>
+        <rect x="19" y="14" width="2" height="2"/><rect x="14" y="19" width="2" height="2"/>
+        <rect x="17" y="17" width="4" height="4" rx="0.5"/>
+      </svg>
+    </div>
+    <h1>QR Studio</h1>
+  </div>
+  <p class="auth-tagline">Sign in to generate and scan QR codes</p>
+
+  <div class="auth-card">
+    <div class="auth-mode-toggle">
+      <button class="auth-mode-btn active" id="mode-login-btn" onclick="setAuthMode('login')">Log in</button>
+      <button class="auth-mode-btn" id="mode-signup-btn" onclick="setAuthMode('signup')">Sign up</button>
+    </div>
+
+    <div class="auth-error" id="auth-error"></div>
+
+    <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+      <div class="auth-field">
+        <label for="auth-email">Email</label>
+        <input type="text" id="auth-email" placeholder="you@example.com" autocomplete="email" required />
+      </div>
+      <div class="auth-field">
+        <label for="auth-password">Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" required style="-webkit-text-security: disc; text-security: disc;" />
+      </div>
+      <button type="submit" class="btn btn-primary auth-submit-btn" id="auth-submit-btn">
+        <span class="spinner"></span>
+        <span class="btn-label" id="auth-submit-label">Log in</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- APP (shown after login) -->
+<div id="app" class="hidden">
+
+<div class="user-bar">
+  <span>Signed in as <span class="user-email" id="user-email-label"></span></span>
+  <button class="logout-btn" onclick="logout()">Log out</button>
+</div>
 
 <header>
   <div class="logo">
@@ -559,6 +730,110 @@
     </div>
   </div>
 </main>
+</div><!-- /#app -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCAw0sHuZT7Lj4ql4Ls0LP2HhTIasbMLbE",
+    authDomain: "qr-code-generator-5505b.firebaseapp.com",
+    projectId: "qr-code-generator-5505b",
+    storageBucket: "qr-code-generator-5505b.appspot.com",
+    messagingSenderId: "256541003943",
+    appId: "1:256541003943:web:92f081e473ac1e65790b82",
+    measurementId: "G-018G0M6EPF"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+
+  let authMode = 'login'; // 'login' | 'signup'
+
+  window.setAuthMode = function (mode) {
+    authMode = mode;
+    document.getElementById('mode-login-btn').classList.toggle('active', mode === 'login');
+    document.getElementById('mode-signup-btn').classList.toggle('active', mode === 'signup');
+    document.getElementById('auth-submit-label').textContent = mode === 'login' ? 'Log in' : 'Sign up';
+    document.getElementById('auth-password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+    hideAuthError();
+  };
+
+  function showAuthError(msg) {
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function hideAuthError() {
+    document.getElementById('auth-error').classList.remove('visible');
+  }
+
+  function friendlyAuthError(err) {
+    const code = err && err.code ? err.code : '';
+    if (code === 'auth/invalid-email') return 'That email address looks invalid.';
+    if (code === 'auth/user-not-found') return 'No account found with that email.';
+    if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') return 'Incorrect email or password.';
+    if (code === 'auth/email-already-in-use') return 'An account with that email already exists.';
+    if (code === 'auth/weak-password') return 'Password should be at least 6 characters.';
+    if (code === 'auth/too-many-requests') return 'Too many attempts. Please try again later.';
+    return err && err.message ? err.message : 'Something went wrong. Please try again.';
+  }
+
+  window.handleAuthSubmit = async function (event) {
+    event.preventDefault();
+    hideAuthError();
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const btn = document.getElementById('auth-submit-btn');
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+      if (authMode === 'login') {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+      document.getElementById('auth-form').reset();
+    } catch (err) {
+      showAuthError(friendlyAuthError(err));
+    } finally {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  };
+
+  window.logout = async function () {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      showToast('Logout failed: ' + err.message);
+    }
+  };
+
+  onAuthStateChanged(auth, (user) => {
+    const authScreen = document.getElementById('auth-screen');
+    const appEl = document.getElementById('app');
+    if (user) {
+      authScreen.classList.add('hidden');
+      appEl.classList.remove('hidden');
+      document.getElementById('user-email-label').textContent = user.email || '';
+    } else {
+      appEl.classList.add('hidden');
+      authScreen.classList.remove('hidden');
+    }
+  });
+</script>
 
 <script>
 let html5Scanner = null;
