@@ -527,7 +527,7 @@
     <form id="auth-form" onsubmit="handleAuthSubmit(event)">
       <div class="auth-field">
         <label for="auth-email">Email</label>
-        <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email" required />
+        <input type="text" id="auth-email" placeholder="you@example.com" autocomplete="email" required />
       </div>
       <div class="auth-field">
         <label for="auth-password">Password</label>
@@ -739,8 +739,7 @@
     onAuthStateChanged,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    signOut,
-    sendEmailVerification
+    signOut
   } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -801,27 +800,10 @@
 
     try {
       if (authMode === 'login') {
-  const userCredential =
-      await signInWithEmailAndPassword(auth, email, password);
-
-  await userCredential.user.reload();
-
-  if (!userCredential.user.emailVerified) {
-    await signOut(auth);
-    showAuthError("Please verify your email before logging in.");
-    return;
-  }
-}else {
-  const userCredential =
-      await createUserWithEmailAndPassword(auth, email, password);
-
-  await sendEmailVerification(userCredential.user);
-
-  alert("Verification email sent. Please check your inbox.");
-
-  await signOut(auth);
-  return;
-}
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
       document.getElementById('auth-form').reset();
     } catch (err) {
       showAuthError(friendlyAuthError(err));
